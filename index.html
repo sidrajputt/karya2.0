@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Karya CRM</title>
+
+    <!-- PWA Settings -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#2563eb">
+
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Custom Styles & Script -->
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js"></script>
+
+    <!-- Dynamic Manifest -->
+    <script>
+        const manifest = {
+            "name": "Karya CRM",
+            "short_name": "Karya",
+            "start_url": ".",
+            "display": "standalone",
+            "background_color": "#ffffff",
+            "theme_color": "#2563eb",
+            "icons": [
+                { "src": "https://img.icons8.com/fluency/192/group-task.png", "sizes": "192x192", "type": "image/png" },
+                { "src": "https://img.icons8.com/fluency/512/group-task.png", "sizes": "512x512", "type": "image/png" }
+            ]
+        };
+        const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+        const link = document.createElement('link');
+        link.rel = 'manifest';
+        link.href = URL.createObjectURL(blob);
+        document.head.appendChild(link);
+    </script>
+</head>
+
+<body class="bg-slate-50 text-slate-900 font-sans selection:bg-blue-100 selection:text-blue-700 pb-safe">
+
+    <div id="app-container" class="min-h-screen relative overflow-x-hidden">
+
+        <!-- SIDEBAR -->
+        <div id="nav-sidebar"
+            class="hidden fixed inset-y-0 left-0 w-64 bg-slate-900 text-white z-50 flex-col transition-transform"></div>
+
+        <!-- MOBILE HEADER -->
+        <div id="nav-mobile-header"
+            class="hidden md:hidden fixed top-0 left-0 right-0 bg-white border-b border-slate-200 h-16 z-40 flex items-center justify-between px-4 shadow-sm">
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <main id="main-content" class="pt-16 md:pt-0 min-h-screen transition-all">
+
+            <!-- 1. LANDING PAGE -->
+            <div id="view-landing" class="view-section hidden">
+                <div class="flex flex-col min-h-screen bg-white">
+                    <header
+                        class="flex items-center justify-between px-6 py-4 border-b border-slate-100 sticky top-0 bg-white/80 backdrop-blur-md z-20">
+                        <div class="flex items-center gap-2">
+                            <div
+                                class="w-8 h-8 bg-brand-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">
+                                K</div><span class="font-bold text-xl tracking-tight text-slate-900">Karya</span>
+                        </div>
+                        <button onclick="App.router.navigate('login')"
+                            class="px-5 py-2 text-sm font-bold text-white bg-slate-900 rounded-full hover:bg-slate-800 shadow-lg">Login</button>
+                    </header>
+                    <main
+                        class="flex-1 flex flex-col items-center justify-center text-center px-4 py-12 relative overflow-hidden">
+                        <div
+                            class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-blue-50 rounded-full blur-3xl opacity-50 -z-10">
+                        </div>
+                        <div
+                            class="inline-flex items-center gap-2 px-3 py-1 mb-8 text-xs font-bold uppercase text-brand-700 bg-brand-50 rounded-full border border-brand-100">
+                            <span class="w-2 h-2 bg-brand-500 rounded-full animate-pulse"></span><span>University
+                                Outreach CRM</span>
+                        </div>
+                        <h1 class="text-4xl md:text-6xl font-extrabold text-slate-900 mb-6 max-w-4xl">Manage your <span
+                                class="text-brand-600">Field Force</span>.</h1>
+                        <p class="text-lg text-slate-500 max-w-xl mb-10">Capture leads, track routes, and manage
+                            admissions seamlessly.</p>
+                        <button onclick="App.router.navigate('login')"
+                            class="px-8 py-4 text-base font-bold text-white bg-brand-600 rounded-xl hover:bg-brand-700 shadow-xl">Get
+                            Started</button>
+                    </main>
+                </div>
+            </div>
+
+            <!-- 2. LOGIN PAGE -->
+            <div id="view-login" class="view-section hidden">
+                <div class="min-h-screen flex items-center justify-center bg-slate-50 px-4">
+                    <div id="login-card"
+                        class="bg-white w-full max-w-sm rounded-2xl shadow-xl border border-slate-100 p-8 animate-float-up">
+                        <div class="text-center mb-8">
+                            <div
+                                class="w-14 h-14 bg-brand-600 rounded-2xl mx-auto flex items-center justify-center text-white font-bold text-2xl shadow-lg mb-4">
+                                K</div>
+                            <h2 class="text-2xl font-bold text-slate-900">Welcome Back</h2>
+                        </div>
+                        <form id="login-form" onsubmit="handleLoginFormSubmit(event)" class="space-y-5">
+                            <div><label class="text-xs font-bold text-slate-600 uppercase">Email</label><input
+                                    type="email" name="email" required
+                                    class="w-full p-3 rounded-xl border border-slate-200 focus:border-brand-500 outline-none"
+                                    placeholder="you@karya.com"></div>
+                            <div><label class="text-xs font-bold text-slate-600 uppercase">Password</label><input
+                                    type="password" name="password" required
+                                    class="w-full p-3 rounded-xl border border-slate-200 focus:border-brand-500 outline-none"
+                                    placeholder="••••••••"></div>
+                            <button type="submit" id="btn-login"
+                                class="w-full py-3 bg-brand-600 text-white font-bold rounded-xl shadow-lg flex justify-center items-center">Sign
+                                In <i data-lucide="arrow-right" class="w-4 h-4 ml-2"></i></button>
+                            <div id="login-error"
+                                class="hidden p-3 bg-red-50 text-red-600 text-xs rounded text-center font-bold"></div>
+                        </form>
+                        <div class="mt-8 text-center"><button onclick="App.router.navigate('landing')"
+                                class="text-xs text-slate-400 hover:text-brand-600">Back to Home</button></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. DASHBOARD PAGE -->
+            <div id="view-dashboard" class="view-section hidden p-4 md:p-8">
+                <div id="dash-container" class="max-w-6xl mx-auto pb-20">
+                    <div class="mb-8">
+                        <h2 class="text-2xl font-bold text-slate-900">Dashboard</h2>
+                    </div>
+                    <div id="dash-empty-state"
+                        class="hidden text-center py-20 bg-white rounded-3xl border border-slate-100">
+                        <h3 class="text-xl font-bold text-slate-800">No Data Yet</h3><button
+                            onclick="App.router.navigate('leads')"
+                            class="mt-4 px-6 py-2 bg-brand-600 text-white rounded-lg font-bold">Add Lead</button>
+                    </div>
+                    <div id="dash-main-content">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                            <div class="bg-white p-6 rounded-2xl border border-slate-100 relative">
+                                <div class="skel-loader skeleton h-16 w-full absolute inset-0 z-10"></div>
+                                <div class="real-content hidden">
+                                    <div class="text-xs font-bold text-slate-400 uppercase">Total Leads</div>
+                                    <div id="stat-total" class="text-4xl font-extrabold text-brand-600">0</div>
+                                </div>
+                            </div>
+                            <div class="bg-white p-6 rounded-2xl border border-slate-100 relative">
+                                <div class="skel-loader skeleton h-16 w-full absolute inset-0 z-10"></div>
+                                <div class="real-content hidden">
+                                    <div class="text-xs font-bold text-slate-400 uppercase">Routes</div>
+                                    <div id="stat-routes" class="text-4xl font-extrabold text-indigo-600">0</div>
+                                </div>
+                            </div>
+                            <div class="bg-white p-6 rounded-2xl border border-slate-100 relative">
+                                <div class="skel-loader skeleton h-16 w-full absolute inset-0 z-10"></div>
+                                <div class="real-content hidden">
+                                    <div class="text-xs font-bold text-slate-400 uppercase">Stages</div>
+                                    <div id="stat-status" class="text-4xl font-extrabold text-emerald-600">0</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid lg:grid-cols-3 gap-6">
+                            <div class="lg:col-span-2 grid md:grid-cols-2 gap-6">
+                                <div class="bg-white p-6 rounded-2xl border border-slate-100 h-80 relative">
+                                    <h3 class="font-bold mb-4">Status</h3>
+                                    <div class="skel-loader skeleton h-full w-full absolute inset-0 z-10"></div>
+                                    <div class="real-content hidden h-60"><canvas id="chart-status"></canvas></div>
+                                </div>
+                                <div class="bg-white p-6 rounded-2xl border border-slate-100 h-80 relative">
+                                    <h3 class="font-bold mb-4">Routes</h3>
+                                    <div class="skel-loader skeleton h-full w-full absolute inset-0 z-10"></div>
+                                    <div class="real-content hidden h-60"><canvas id="chart-route"></canvas></div>
+                                </div>
+                            </div>
+                            <div class="bg-white p-6 rounded-2xl border border-slate-100 h-fit">
+                                <h3 class="font-bold mb-4">Leaderboard</h3>
+                                <div class="skel-loader skeleton h-40 w-full"></div>
+                                <div id="leaderboard-list" class="real-content hidden space-y-3"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 4. LEADS PAGE -->
+            <div id="view-leads" class="view-section hidden p-4 md:p-8">
+                <div class="max-w-3xl mx-auto">
+                    <div class="flex flex-col md:flex-row gap-4 mb-6 sticky top-0 bg-slate-50 pt-2 pb-2 z-10">
+                        <div class="relative flex-1"><i data-lucide="search"
+                                class="absolute left-3 top-2.5 w-4 h-4 text-slate-400"></i><input
+                                onkeyup="filterLeads(this.value)" placeholder="Search..."
+                                class="w-full pl-9 pr-4 py-2 rounded-lg border border-slate-200 text-sm"></div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <button onclick="openStudentModal()"
+                            class="bg-white border p-4 rounded-xl shadow-sm font-bold flex flex-col items-center gap-2 hover:shadow-md"><i
+                                data-lucide="graduation-cap" class="w-6 h-6 text-brand-600"></i> Add Student</button>
+                        <button onclick="openOtherModal()"
+                            class="bg-white border p-4 rounded-xl shadow-sm font-bold flex flex-col items-center gap-2 hover:shadow-md"><i
+                                data-lucide="building-2" class="w-6 h-6 text-slate-600"></i> Add Other</button>
+                    </div>
+                    <div id="leads-list" class="space-y-3 pb-24"></div>
+                </div>
+            </div>
+
+            <!-- 5. ADMIN PAGE -->
+            <div id="view-admin" class="view-section hidden p-4 md:p-8">
+                <div class="max-w-6xl mx-auto pb-20">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-bold">Admin</h2><button onclick="loadAdmin()"
+                            class="p-2 bg-white rounded border shadow-sm"><i data-lucide="refresh-cw"
+                                class="w-4 h-4"></i></button>
+                    </div>
+                    <div class="flex gap-2 mb-4 border-b overflow-x-auto"><button id="btn-tab-users"
+                            onclick="switchTab('users')"
+                            class="pb-2 border-b-2 border-brand-600 font-bold text-brand-600 tab-btn">Users</button><button
+                            id="btn-tab-teams" onclick="switchTab('teams')"
+                            class="pb-2 border-b-2 border-transparent text-slate-500 tab-btn">Teams</button><button
+                            id="btn-tab-settings" onclick="switchTab('settings')"
+                            class="pb-2 border-b-2 border-transparent text-slate-500 tab-btn">Settings</button><button
+                            id="btn-tab-export" onclick="switchTab('export')"
+                            class="pb-2 border-b-2 border-transparent text-slate-500 tab-btn">Export</button></div>
+                    <div id="view-users" class="tab-view">
+                        <div class="bg-white rounded border shadow-sm">
+                            <div class="p-3 border-b flex justify-between"><input
+                                    onkeyup="renderUserTable(adminState.users.filter(u=>u.Name.toLowerCase().includes(this.value.toLowerCase())))"
+                                    placeholder="Search users..." class="border rounded px-2 py-1 text-sm w-40"><button
+                                    onclick="openUserModal()"
+                                    class="bg-brand-600 text-white px-3 py-1 rounded text-sm font-bold">+ Add</button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm text-left">
+                                    <thead class="bg-slate-50">
+                                        <tr>
+                                            <th class="p-3">Name</th>
+                                            <th class="p-3">Role</th>
+                                            <th class="p-3">Phone</th>
+                                            <th class="p-3">Team</th>
+                                            <th class="p-3 text-right">Edit</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="user-table-body"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="view-teams" class="tab-view hidden"><button
+                            onclick="document.getElementById('modal-team').classList.remove('hidden')"
+                            class="mb-4 bg-brand-600 text-white px-4 py-2 rounded shadow">+ Create Team</button>
+                        <div id="team-list" class="grid md:grid-cols-2 gap-4"></div>
+                    </div>
+                    <div id="view-settings" class="tab-view hidden">
+                        <div id="settings-grid" class="grid md:grid-cols-3 gap-4"></div>
+                    </div>
+                    <div id="view-export" class="tab-view hidden">
+                        <div class="bg-white p-6 rounded border shadow-sm">
+                            <h3 class="font-bold mb-4">Export</h3>
+                            <form onsubmit="handleExport(event)">
+                                <div class="grid grid-cols-3 gap-4 mb-4"><label class="chk-label"><input type="checkbox"
+                                            name="xc" value="ProspectName" checked> Name</label><label
+                                        class="chk-label"><input type="checkbox" name="xc" value="Phone" checked>
+                                        Phone</label><label class="chk-label"><input type="checkbox" name="xc"
+                                            value="Route" checked> Route</label><label class="chk-label"><input
+                                            type="checkbox" name="xc" value="Status" checked> Status</label></div>
+                                <button class="bg-green-600 text-white px-4 py-2 rounded font-bold">Download
+                                    CSV</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- BOTTOM NAV -->
+        <div id="nav-mobile-bottom"
+            class="hidden md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 h-16 z-50 flex justify-around items-center pb-safe shadow-lg">
+        </div>
+
+    </div>
+
+    <!-- === MODALS (Hidden by Default) === -->
+
+    <!-- Install Modal -->
+    <div id="modal-install"
+        class="hidden fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center">
+            <h3 class="font-bold text-lg mb-2">Install App</h3>
+            <p class="text-sm text-slate-500 mb-4">Add to Home Screen for full experience.</p><button
+                onclick="document.getElementById('modal-install').classList.add('hidden')"
+                class="w-full py-3 bg-slate-900 text-white rounded-xl font-bold">Got it</button>
+        </div>
+    </div>
+
+    <!-- Student Lead Modal -->
+    <div id="modal-student"
+        class="fixed inset-0 bg-black/60 z-[70] hidden flex items-end md:items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-lg rounded-t-2xl md:rounded-2xl p-6 max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <h3 class="font-bold text-xl">New Student</h3><button
+                    onclick="document.getElementById('modal-student').classList.add('hidden')">X</button>
+            </div>
+            <form onsubmit="handleSaveStudent(event)" class="space-y-4"><input type="hidden" name="Latitude"
+                    id="st-lat"><input type="hidden" name="Longitude" id="st-lng">
+                <div class="grid grid-cols-2 gap-3">
+                    <div><label class="text-[10px] font-bold">Source</label><select name="DataSource" id="st-source"
+                            class="input-std"></select></div>
+                    <div><label class="text-[10px] font-bold">Category</label><select name="Category" id="st-cat"
+                            class="input-std"></select></div>
+                </div><input name="Name" placeholder="Name" class="input-std" required><input name="FatherName"
+                    placeholder="Father" class="input-std">
+                <div class="grid grid-cols-2 gap-3"><input name="DOB" type="date" class="input-std"><input name="Phone"
+                        type="tel" placeholder="Phone" pattern="[0-9]{10}" class="input-std" required></div><input
+                    name="Address" placeholder="Address" class="input-std"><input name="SchoolCollege"
+                    placeholder="School" class="input-std">
+                <div class="grid grid-cols-2 gap-3"><select name="Class" id="st-class"
+                        class="input-std"></select><select name="Specialization" id="st-spec"
+                        class="input-std"></select></div><select name="InterestedCourse" id="st-course"
+                    class="input-std"></select><textarea name="Notes" placeholder="Remarks"
+                    class="input-std"></textarea>
+                <div class="flex justify-between items-center bg-blue-50 p-3 rounded"><span
+                        class="text-xs font-bold text-blue-800">GPS</span><button type="button"
+                        onclick="captureLocation('st-lat','st-lng','st-gps-txt')" id="st-gps-txt"
+                        class="text-xs bg-white px-3 py-1 rounded border">Capture</button></div><button
+                    id="btn-save-student" class="w-full py-3 bg-brand-600 text-white rounded font-bold">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Other Lead Modal -->
+    <div id="modal-other"
+        class="fixed inset-0 bg-black/60 z-[70] hidden flex items-end md:items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-lg rounded-t-2xl md:rounded-2xl p-6 max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div class="flex justify-between mb-4">
+                <h3 class="font-bold text-xl">Institutional Lead</h3><button
+                    onclick="document.getElementById('modal-other').classList.add('hidden')">X</button>
+            </div>
+            <div class="flex bg-slate-100 p-1 rounded mb-6"><button type="button" onclick="toggleOtherMode('Route')"
+                    id="btn-mode-Route" class="mode-btn flex-1 py-2 rounded text-sm font-bold">By Route</button><button
+                    type="button" onclick="toggleOtherMode('Name')" id="btn-mode-Name"
+                    class="mode-btn flex-1 py-2 rounded text-sm font-bold">By Name</button></div>
+            <form onsubmit="handleSaveOther(event)" class="space-y-4"><input type="hidden" id="other-mode"
+                    value="Route"><input type="hidden" name="Latitude" id="ot-lat"><input type="hidden" name="Longitude"
+                    id="ot-lng">
+                <div id="sec-route">
+                    <div class="space-y-3 border-b pb-4 mb-4"><select name="Route" id="ot-route"
+                            class="input-std"></select><input name="VillageCity" placeholder="Village"
+                            class="input-std">
+                        <div class="grid grid-cols-2 gap-3"><input name="SarpanchName" placeholder="Sarpanch"
+                                class="input-std"><input name="SarpanchContact" placeholder="Contact" class="input-std">
+                        </div>
+                    </div>
+                    <div class="border-2 border-dashed p-4 rounded">
+                        <h4 class="text-sm font-bold mb-3">Add School</h4><input id="other-school-name"
+                            placeholder="Name" class="input-std mb-2">
+                        <div class="grid grid-cols-2 gap-2 mb-2"><input id="other-school-prospect"
+                                placeholder="Prospect" class="input-std"><input id="other-school-contact"
+                                placeholder="Contact" class="input-std"></div><input id="other-school-remark"
+                            placeholder="Remark" class="input-std mb-3"><button type="button"
+                            onclick="addSchoolToBuffer()"
+                            class="w-full py-2 bg-brand-600 text-white rounded text-sm font-bold">+ Add</button>
+                    </div>
+                    <div id="school-buffer-list" class="mt-3 space-y-2"></div>
+                </div>
+                <div id="sec-direct" class="hidden space-y-4"><input name="DirectName" placeholder="Institute Name"
+                        class="input-std">
+                    <div class="grid grid-cols-2 gap-3"><input name="DirectProspect" placeholder="Prospect"
+                            class="input-std"><input name="DirectContact" placeholder="Contact" class="input-std"></div>
+                    <textarea name="DirectRemark" placeholder="Remark" class="input-std"></textarea>
+                </div>
+                <div class="flex justify-between items-center bg-slate-50 p-3 rounded mt-4"><span
+                        class="text-xs font-bold">GPS</span><button type="button"
+                        onclick="captureLocation('ot-lat','ot-lng','ot-gps-txt')" id="ot-gps-txt"
+                        class="text-xs bg-white px-3 py-1 rounded border">Capture</button></div><button
+                    id="btn-save-other" class="w-full py-3 bg-slate-800 text-white rounded font-bold mt-4">Save
+                    All</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Lead Modal -->
+    <div id="modal-edit-lead"
+        class="fixed inset-0 bg-black/60 z-[80] hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl">
+            <h3 class="font-bold text-lg mb-4">Update Lead</h3>
+            <form id="form-edit-lead" onsubmit="handleUpdateLead(event)" class="space-y-4"><input type="hidden"
+                    name="LeadID"><select name="Status" class="input-std">
+                    <option value="New">New</option>
+                    <option value="Interested">Interested</option>
+                    <option value="Converted">Converted</option>
+                    <option value="Not Interested">Not Interested</option>
+                </select><textarea name="Notes" class="input-std h-24"></textarea>
+                <div class="flex gap-3 pt-2"><button type="button"
+                        onclick="document.getElementById('modal-edit-lead').classList.add('hidden')"
+                        class="flex-1 py-2 bg-slate-100 rounded">Cancel</button><button type="submit"
+                        id="btn-update-lead"
+                        class="flex-1 py-2 bg-brand-600 text-white rounded font-bold">Update</button></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Modals -->
+    <div id="modal-user" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-[80]">
+        <div class="bg-white w-full max-w-md rounded-lg p-6">
+            <h3 class="font-bold text-lg mb-4">User</h3>
+            <form id="form-user" onsubmit="handleSaveUser(event)" class="space-y-3"><input type="hidden"
+                    name="UserID"><input name="Name" placeholder="Name" class="input-std" required><input name="Email"
+                    placeholder="Email" class="input-std" required><input name="Phone" placeholder="Phone"
+                    class="input-std" required>
+                <div class="grid grid-cols-2 gap-2"><select name="Role" class="input-std">
+                        <option value="user">Exec</option>
+                        <option value="supervisor">Sup</option>
+                        <option value="admin">Admin</option>
+                    </select><select name="TeamID" id="in-user-team" class="input-std"></select></div>
+                <div id="user-pwd-grp"><input name="Password" placeholder="Password" class="input-std"></div>
+                <div class="flex gap-2 mt-4"><button type="button"
+                        onclick="document.getElementById('modal-user').classList.add('hidden')"
+                        class="flex-1 py-2 border rounded">Cancel</button><button
+                        class="flex-1 py-2 bg-brand-600 text-white rounded">Save</button></div>
+            </form>
+        </div>
+    </div>
+    <div id="modal-team" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-[80]">
+        <div class="bg-white w-full max-w-sm rounded-lg p-6">
+            <h3 class="font-bold text-lg mb-4">Team</h3>
+            <form onsubmit="handleAddTeam(event)" class="space-y-3"><input name="Name" placeholder="Name"
+                    class="input-std" required><select name="SupervisorID" class="input-std"
+                    id="in-team-sup"></select><button
+                    class="w-full py-2 bg-brand-600 text-white rounded mt-2">Create</button></form><button
+                onclick="document.getElementById('modal-team').classList.add('hidden')"
+                class="mt-2 w-full py-2 border rounded">Cancel</button>
+        </div>
+    </div>
+
+</body>
+
+</html>

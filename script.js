@@ -6,20 +6,14 @@
 // ⚠️ CRITICAL: PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE
 const API_URL = "https://script.google.com/macros/s/AKfycbycZu1jgJkLIbkRpbEst2oGEcFP3cwNHG6GIhgxE4G9HQ4sJSccF2HgK4-TRQa4jqqhWQ/exec";
 
-// ============================================================
 // 1. APP CONTROLLER (State, Auth, Router)
 // ============================================================
 const App = {
     state: { user: null, token: null, deferredPrompt: null },
 
     init: async () => {
-        // PWA Install Listener
         window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); App.state.deferredPrompt = e; });
-
-        // Check Session
-        const t = localStorage.getItem('karya_token');
-        const u = localStorage.getItem('karya_user');
-
+        const t = localStorage.getItem('karya_token'), u = localStorage.getItem('karya_user');
         if (t && u) {
             App.state.token = t;
             App.state.user = JSON.parse(u);
@@ -53,7 +47,7 @@ const App = {
       </div>
       <div class="p-4 border-t border-slate-800">
          <div class="mb-4 px-4">
-           <div class="text-white text-sm font-medium">${App.state.user?.Name}</div>
+           <div class="text-white text-sm font-medium truncate">${App.state.user?.Name}</div>
            <div class="text-slate-500 text-xs capitalize">${role}</div>
          </div>
          <button onclick="App.auth.logout()" class="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg"><i data-lucide="log-out" class="w-5 h-5"></i> Logout</button>
@@ -85,11 +79,18 @@ const App = {
             const sb = document.getElementById('nav-sidebar'), main = document.getElementById('main-content'), mobs = ['nav-mobile-bottom', 'nav-mobile-header'];
 
             if (isPublic) {
+                // --- PUBLIC MODE ---
                 sb.classList.add('hidden'); sb.classList.remove('md:flex');
                 main.classList.remove('md:pl-64', 'pt-16');
                 mobs.forEach(id => document.getElementById(id).classList.add('hidden'));
             } else {
-                sb.classList.remove('hidden'); sb.classList.add('md:flex');
+                // --- APP MODE (Dashboard) ---
+
+                // FIX: FORCE HIDDEN ON MOBILE, FLEX ON DESKTOP
+                sb.classList.add('hidden');   // Keep hidden on small screens
+                sb.classList.add('md:flex');  // Show flex ONLY on medium+ screens
+
+                // Layout Adjustments
                 main.classList.add('md:pl-64', 'pt-16');
                 mobs.forEach(id => document.getElementById(id).classList.remove('hidden'));
 
@@ -112,7 +113,6 @@ const App = {
             const res = await API.post('auth/login', { email: e, password: p });
             localStorage.setItem('karya_token', res.token); localStorage.setItem('karya_user', JSON.stringify(res.user));
             App.state.token = res.token; App.state.user = res.user;
-            // Cache settings
             const s = await API.post('settings/get', { token: res.token }); localStorage.setItem('karya_settings', JSON.stringify(s));
             App.renderNav(); App.router.navigate('dashboard');
         },
@@ -203,11 +203,9 @@ async function loadDashboard() {
         document.getElementById('stat-status').innerText = Object.keys(stats.byStatus).length;
         document.getElementById('stat-routes').innerText = Object.keys(stats.byRoute).length;
 
-        // Render Charts
         renderChart('chart-route', 'bar', 'Leads', stats.byRoute);
         renderChart('chart-status', 'doughnut', 'Status', stats.byStatus);
 
-        // Render Leaderboard
         document.getElementById('leaderboard-list').innerHTML = ranking.map((r, i) => `
       <div class="flex justify-between p-3 bg-slate-50 rounded border border-slate-100">
         <div class="flex gap-3"><div class="w-6 h-6 flex items-center justify-center rounded-full font-bold text-xs ${i === 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100'}">#${i + 1}</div>

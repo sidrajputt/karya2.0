@@ -7,55 +7,40 @@
   <title>Karya CRM</title>
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="favicon.ico">
-
-  <!-- PWA -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#2563eb">
-
-  <!-- Libraries -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>tailwind.config = { theme: { extend: { colors: { brand: { 500: '#3b82f6', 600: '#2563eb', 900: '#1e3a8a' } } } } }</script>
-
-  <!-- Main Entry -->
   <script type="module" src="js/app.js" defer></script>
 </head>
 
 <body class="bg-slate-50 text-slate-900 font-sans pb-safe">
-
-  <!-- LAYOUT -->
   <div id="app-container" class="min-h-screen relative overflow-x-hidden">
-    <!-- Sidebar (Desktop) -->
     <div id="nav-sidebar"
       class="hidden fixed inset-y-0 left-0 w-64 bg-slate-900 text-white z-50 flex-col transition-transform shadow-2xl">
     </div>
-
-    <!-- Header (Mobile) -->
     <div id="nav-mobile-header"
       class="hidden md:hidden fixed top-0 left-0 right-0 bg-white/90 backdrop-blur border-b border-slate-200 h-16 z-40 flex items-center justify-between px-4 shadow-sm">
     </div>
-
-    <!-- Content Area -->
-    <main id="main-content" class="min-h-screen transition-all duration-300 pt-16 md:pt-0">
-      <!-- Pages injected here -->
-    </main>
-
-    <!-- Bottom Nav (Mobile) -->
+    <main id="main-content" class="min-h-screen transition-all duration-300 pt-16 md:pt-0"></main>
     <div id="nav-mobile-bottom"
       class="hidden md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 h-20 z-50 flex justify-around items-start pt-3 pb-safe shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.05)]">
     </div>
   </div>
-
-  <!-- OVERLAYS -->
   <div id="toast-container" class="fixed top-5 right-5 z-[110] flex flex-col gap-2 pointer-events-none"></div>
   <div id="modal-overlay"
     class="hidden fixed inset-0 bg-black/60 z-[100] flex items-end md:items-center justify-center p-4 backdrop-blur-sm">
     <div id="modal-content"
-      class="bg-white w-full max-w-lg rounded-t-3xl md:rounded-3xl p-6 max-h-[90vh] overflow-y-auto shadow-2xl animate-float-up">
+      class="bg-white w-full max-w-lg rounded-t-3xl md:rounded-3xl max-h-[90vh] overflow-y-auto shadow-2xl animate-float-up">
     </div>
   </div>
-
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW Fail', err));
+    }
+  </script>
 </body>
 
 </html>

@@ -11,28 +11,35 @@ export const Router = {
     const main = document.getElementById('main-content');
     const mobs = ['nav-mobile-header', 'nav-mobile-bottom'];
 
-    // 1. Load HTML
     try {
       const res = await fetch(`pages/${page}.html`);
+      if (!res.ok) throw new Error("404");
       const html = await res.text();
       container.innerHTML = `<div id="view-${page}" class="view-section animate-float-up">${html}</div>`;
-    } catch (e) {
-      console.error("Page Load Error", e);
-      return;
-    }
+    } catch (e) { console.error(e); return; }
 
-    // 2. Layout Logic
     const isPublic = ['landing', 'login'].includes(page);
     if (isPublic) {
-      sidebar.classList.add('hidden'); sidebar.classList.remove('md:flex');
+      // Public Page: Hide sidebar and mobile navs everywhere
+      sidebar.classList.add('hidden');
+      sidebar.classList.remove('md:flex');
+
       main.classList.remove('md:pl-64', 'pt-16');
       mobs.forEach(id => document.getElementById(id).classList.add('hidden'));
     } else {
-      sidebar.classList.remove('hidden'); sidebar.classList.add('md:flex');
+      // Private Page (Dashboard/Leads): 
+      // Sidebar: Hidden on Mobile (base), Flex on Desktop (md:flex)
+      // FIX: Do NOT remove 'hidden'. The 'md:flex' class overrides it on desktop.
+      sidebar.classList.add('hidden');
+      sidebar.classList.add('md:flex');
+
+      // Main Content: Add padding for sidebar (desktop) and header (mobile)
       main.classList.add('md:pl-64', 'pt-16');
+
+      // Mobile Navs: Show on mobile (remove 'hidden'), they hide themselves on desktop via CSS (md:hidden)
       mobs.forEach(id => document.getElementById(id).classList.remove('hidden'));
 
-      // Active Menu
+      // Update active state in sidebar
       document.querySelectorAll('.nav-item').forEach(el => {
         el.classList.remove('text-white', 'bg-white/10'); el.classList.add('text-slate-400');
       });
@@ -42,16 +49,13 @@ export const Router = {
       if (m) { m.classList.remove('text-slate-400'); m.classList.add('text-brand-600'); }
     }
 
-    // 3. Init Controller
+    // Init Controller
     if (page === 'login') LoginController.init();
     if (page === 'dashboard') DashboardController.init();
     if (page === 'leads') LeadsController.init();
     if (page === 'admin') AdminController.init();
-
-    // 4. Global Bindings for Landing
     if (page === 'landing') {
-      document.getElementById('btn-landing-login')?.addEventListener('click', () => Router.navigate('login'));
-      document.getElementById('btn-landing-cta')?.addEventListener('click', () => Router.navigate('login'));
+      document.querySelectorAll('.btn-to-login').forEach(b => b.onclick = () => Router.navigate('login'));
     }
 
     createIcons({ icons });

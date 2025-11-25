@@ -7,15 +7,15 @@ export const Utils = {
     document.getElementById('toast-container').appendChild(el);
     setTimeout(() => { el.remove(); }, 3000);
   },
-  
   modal: {
     open: (contentHTML) => {
       const m = document.getElementById('modal-overlay');
       document.getElementById('modal-content').innerHTML = contentHTML;
       m.classList.remove('hidden');
-      // Bind close button
       const closeBtn = m.querySelector('.btn-close-modal');
-      if(closeBtn) closeBtn.onclick = Utils.modal.close;
+      if (closeBtn) closeBtn.onclick = Utils.modal.close;
+      // Close on background click
+      m.onclick = (e) => { if (e.target === m) Utils.modal.close(); };
     },
     close: () => {
       document.getElementById('modal-overlay').classList.add('hidden');

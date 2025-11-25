@@ -1,128 +1,89 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
 
 <head>
     <meta charset="utf-8">
-    <title>Karya Seeder</title>
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <style>
-        body {
-            font-family: system-ui;
-            padding: 16px;
-            background: #f7fafc
-        }
-
-        .card {
-            background: #fff;
-            padding: 16px;
-            border-radius: 8px;
-            max-width: 900px;
-            margin: auto;
-            box-shadow: 0 6px 18px rgba(10, 10, 10, 0.06)
-        }
-    </style>
+    <title>Karya DB Migrator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body>
-    <div class="card">
-        <h2>Karya — Firestore Seeder & Migrator</h2>
-        <p>Paste Firebase config JSON or ensure /js/config.js defines window.__FIREBASE_CONFIG__</p>
-        <textarea id="cfg" style="width:100%;height:120px"
-            placeholder='{"apiKey":"", "projectId":"", "authDomain":""}'></textarea>
-        <div style="margin-top:8px">
-            <button id="init">Init</button>
-            <button id="seed-settings" disabled>Seed Settings (OriginType)</button>
-            <button id="migrate-leads" disabled>Migrate Leads</button>
-            <button id="seed-samples" disabled>Seed Sample Leads & Users</button>
+<body class="bg-slate-900 text-slate-300 p-10 font-mono">
+    <div class="max-w-2xl mx-auto">
+        <h1 class="text-2xl text-white font-bold mb-4">Database Migration Tool</h1>
+
+        <div class="mb-6 p-4 border border-slate-700 rounded bg-slate-800">
+            <h3 class="text-white font-bold mb-2">1. Initialize</h3>
+            <button id="btn-init" class="px-4 py-2 bg-blue-600 text-white rounded">Connect to Firestore</button>
         </div>
-        <pre id="log"
-            style="background:#0f1720;color:#d1d5db;padding:12px;height:220px;overflow:auto;margin-top:12px"></pre>
+
+        <div class="mb-6 p-4 border border-slate-700 rounded bg-slate-800 opacity-50 pointer-events-none" id="actions">
+            <h3 class="text-white font-bold mb-2">2. Actions</h3>
+            <div class="flex gap-2 flex-wrap">
+                <button id="btn-seed-meta" class="px-3 py-1 bg-slate-600 text-white rounded">Seed Settings</button>
+                <button id="btn-seed-users" class="px-3 py-1 bg-slate-600 text-white rounded">Seed Admin User</button>
+                <button id="btn-migrate" class="px-3 py-1 bg-green-600 text-white rounded">MIGRATE DATA V2</button>
+            </div>
+        </div>
+
+        <div id="log" class="h-64 bg-black p-4 rounded overflow-auto text-xs font-mono border border-slate-700">
+            Waiting...</div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script type="module">
+        import { db } from './js/config.js';
+        import { collection, doc, setDoc, getDocs, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    <script>
-        const logEl = document.getElementById('log');
-        function log(s) { logEl.innerText += s + "\\n"; logEl.scrollTop = logEl.scrollHeight; }
+        const log = (msg) => {
+            const el = document.getElementById('log');
+            el.innerHTML += `<div>> ${msg}</div>`;
+            el.scrollTop = el.scrollHeight;
+        };
 
-        document.getElementById('init').addEventListener('click', async () => {
-            const cfgText = document.getElementById('cfg').value.trim();
-            let cfg = null;
-            if (cfgText) cfg = JSON.parse(cfgText);
-            else if (window.__FIREBASE_CONFIG__) cfg = window.__FIREBASE_CONFIG__;
-            else {
-                try {
-                    const r = await fetch('/js/config.js'); if (r.ok) { const txt = await r.text(); const m = txt.match(/\\{[\\s\\S]*\\}/); if (m) cfg = JSON.parse(m[0].replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, (m1, a, b) => '"' + b + '":')); }
-                } catch (e) { }
-            }
-            if (!cfg || !cfg.projectId) { log('Invalid config'); return; }
-            firebase.initializeApp(cfg);
-            window.db = firebase.firestore();
-            log('Firebase initialized: ' + cfg.projectId);
-            document.getElementById('seed-settings').disabled = false;
-            document.getElementById('migrate-leads').disabled = false;
-            document.getElementById('seed-samples').disabled = false;
-        });
+        document.getElementById('btn-init').onclick = () => {
+            log('Connected to ' + db.app.options.projectId);
+            document.getElementById('actions').classList.remove('opacity-50', 'pointer-events-none');
+        };
 
-        document.getElementById('seed-settings').addEventListener('click', async () => {
-            if (!window.db) return log('Init first');
-            const metaRef = db.collection('settings').doc('meta');
-            const origin = [{ value: 'School' }, { value: 'Institute' }, { value: 'Coaching Centre' }, { value: 'Club' }];
-            await metaRef.set({ OriginType: origin }, { merge: true });
-            log('OriginType seeded in settings/meta');
-        });
+        document.getElementById('btn-seed-meta').onclick = async () => {
+            await setDoc(doc(db, 'settings', 'meta'), {
+                OriginType: [{ value: 'School' }, { value: 'Coaching' }, { value: 'Institute' }]
+            }, { merge: true });
+            log('Settings seeded.');
+        };
 
-        document.getElementById('migrate-leads').addEventListener('click', async () => {
-            if (!window.db) return log('Init first');
-            log('Starting migration... (this may take a while for large collections)');
-            const snap = await db.collection('leads').get();
-            if (snap.empty) { log('No leads found'); return; }
-            let count = 0; const batch = db.batch(); let bcount = 0;
-            for (const doc of snap.docs) {
-                const data = doc.data();
-                const upd = {};
-                if (data.OriginType === undefined) upd.OriginType = data.Source || null;
-                if (data.Timeline === undefined) upd.Timeline = [];
-                if (data.CreatedAt === undefined) upd.CreatedAt = data.createdAt || firebase.firestore.FieldValue.serverTimestamp();
-                if (data.UpdatedAt === undefined) upd.UpdatedAt = firebase.firestore.FieldValue.serverTimestamp();
-                if (data.AssignedTo === undefined) upd.AssignedTo = data.assignedTo || null;
-                if (Object.keys(upd).length) { batch.set(db.collection('leads').doc(doc.id), upd, { merge: true }); bcount++; }
-                count++;
-                if (bcount >= 300) { await batch.commit(); log('Committed batch...'); bcount = 0; }
-            }
-            if (bcount > 0) await batch.commit();
-            log('Migration completed for ' + count + ' leads.');
-        });
-
-        document.getElementById('seed-samples').addEventListener('click', async () => {
-            if (!window.db) return log('Init first');
-            // create sample users
-            const users = [
-                { UserID: 'superadmin1', Name: 'Super Admin', Role: 'SuperAdmin', Email: 'super@karya.local' },
-                { UserID: 'supervisor1', Name: 'Supervisor One', Role: 'Supervisor', Email: 'supervisor@karya.local' },
-                { UserID: 'employee1', Name: 'Employee One', Role: 'Employee', Email: 'employee@karya.local' }
-            ];
-            const ubatch = db.batch();
-            users.forEach(u => ubatch.set(db.collection('users').doc(u.UserID), u, { merge: true }));
-            await ubatch.commit();
-            log('Sample users created.');
-
-            // sample leads
-            const leads = [
-                { Name: 'Rahul Sharma', Phone: '9876543210', LeadType: 'Student', OriginType: 'School', Status: 'New', CreatedAt: firebase.firestore.FieldValue.serverTimestamp() },
-                { Name: 'Anjali Mehta', Phone: '9123456780', LeadType: 'Student', OriginType: 'Coaching Centre', Status: 'Contacted', CreatedAt: firebase.firestore.FieldValue.serverTimestamp() },
-                { Name: 'Green Valley High', Phone: '7700112233', LeadType: 'School', OriginType: 'School', Status: 'Contacted', CreatedAt: firebase.firestore.FieldValue.serverTimestamp() }
-            ];
-            const b = db.batch();
-            leads.forEach(l => {
-                const id = db.collection('leads').doc().id;
-                b.set(db.collection('leads').doc(id), l);
+        document.getElementById('btn-seed-users').onclick = async () => {
+            // Creates a dummy entry; actual auth user must be created in Firebase Console
+            await setDoc(doc(db, 'users', 'admin_placeholder'), {
+                Name: "Admin User", Role: "SuperAdmin", Email: "admin@karya.com"
             });
-            await b.commit();
-            log('Sample leads inserted.');
-        });
+            log('User placeholder created.');
+        };
 
+        document.getElementById('btn-migrate').onclick = async () => {
+            log('Starting Migration V2 (Adding Timelines)...');
+            const snap = await getDocs(collection(db, 'leads'));
+            let count = 0;
+            for (const d of snap.docs) {
+                const data = d.data();
+                const update = {};
+                // Ensure Timeline Exists
+                if (!data.Timeline || !Array.isArray(data.Timeline)) {
+                    update.Timeline = [{
+                        ts: new Date().toISOString(),
+                        type: 'system',
+                        note: 'Migrated from V1'
+                    }];
+                }
+                // Ensure CreatedAt is valid timestamp
+                if (!data.CreatedAt) update.CreatedAt = serverTimestamp();
+
+                if (Object.keys(update).length > 0) {
+                    await updateDoc(d.ref, update);
+                    count++;
+                }
+            }
+            log(`Migration complete. Updated ${count} documents.`);
+        };
     </script>
 </body>
 

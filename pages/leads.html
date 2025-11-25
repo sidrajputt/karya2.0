@@ -1,0 +1,99 @@
+<!-- pages/leads.html (UPGRADED) -->
+<div class="max-w-6xl mx-auto px-4 py-6">
+
+  <!-- Top bar: Search + Quick actions -->
+  <div class="flex flex-col md:flex-row justify-between gap-4 items-start md:items-center mb-4">
+    <div class="flex-1 flex gap-3 items-center">
+      <div class="relative flex-1">
+        <i data-lucide="search" class="absolute left-3 top-3 w-4 h-4 text-slate-400"></i>
+        <input id="lead-search" placeholder="Search name, phone, route..."
+          class="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200" />
+      </div>
+
+      <button id="btn-toggle-filters" class="px-3 py-2 bg-white border rounded-lg">Filters</button>
+
+      <select id="per-page" class="px-3 py-2 border rounded-lg">
+        <option value="20">20 / page</option>
+        <option value="30">30 / page</option>
+        <option value="50">50 / page</option>
+      </select>
+    </div>
+
+    <div class="flex gap-2">
+      <button id="btn-export-csv" class="px-4 py-2 rounded-lg bg-slate-800 text-white">Export CSV</button>
+      <button id="btn-add-student" class="px-4 py-2 rounded-lg bg-indigo-600 text-white">+ Add Student</button>
+      <button id="btn-add-other" class="px-4 py-2 rounded-lg bg-white border">Add Other</button>
+    </div>
+  </div>
+
+  <!-- Filters panel -->
+  <div id="filter-panel" class="hidden bg-white p-4 rounded-lg border mb-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <select id="filter-status" class="p-2 border rounded">
+        <!-- options populated by controller -->
+      </select>
+
+      <select id="filter-type" class="p-2 border rounded">
+        <option value="">All Types</option>
+        <option value="Student">Student</option>
+        <option value="School">School</option>
+        <option value="Other">Other</option>
+      </select>
+
+      <select id="filter-origin" class="p-2 border rounded">
+        <option value="">Any Origin</option>
+        <!-- dynamically loaded -->
+      </select>
+    </div>
+
+    <div class="mt-3 flex gap-2">
+      <button id="btn-apply-filters" class="px-4 py-2 bg-indigo-600 text-white rounded">Apply</button>
+      <button id="btn-clear-filters" class="px-4 py-2 border rounded">Clear</button>
+    </div>
+  </div>
+
+  <div class="grid md:grid-cols-3 gap-6">
+    <!-- leads list -->
+    <div class="md:col-span-2">
+      <div id="leads-list-container" class="space-y-3 min-h-[300px] bg-white p-4 rounded-lg border">
+        <!-- list rendered here -->
+      </div>
+
+      <div id="pagination-controls" class="hidden mt-4 flex justify-between items-center">
+        <button id="btn-prev" class="px-3 py-2 border rounded">Previous</button>
+        <div id="page-info" class="text-sm text-slate-600">Page 1</div>
+        <button id="btn-next" class="px-3 py-2 border rounded">Next</button>
+      </div>
+    </div>
+
+    <!-- right side: lead detail drawer compact -->
+    <div>
+      <div id="lead-detail-compact" class="bg-white p-4 rounded-lg border hidden">
+        <div class="flex justify-between items-start">
+          <div>
+            <div id="detail-name" class="font-bold text-lg"></div>
+            <div id="detail-meta" class="text-sm text-slate-500"></div>
+          </div>
+          <div class="flex gap-2">
+            <button id="detail-add-note" class="px-3 py-1 bg-indigo-600 text-white rounded">Add Note</button>
+            <button id="detail-change-status" class="px-3 py-1 border rounded">Change Status</button>
+          </div>
+        </div>
+
+        <div class="mt-3">
+          <h4 class="font-semibold text-sm mb-2">Timeline</h4>
+          <div id="detail-timeline" class="space-y-2 max-h-60 overflow-auto text-sm text-slate-700"></div>
+        </div>
+      </div>
+
+      <!-- quick stats for the selected lead -->
+      <div id="detail-stats" class="bg-white p-4 rounded-lg border mt-4 hidden">
+        <div><strong>Created:</strong> <span id="detail-created"></span></div>
+        <div><strong>Last Activity:</strong> <span id="detail-last-activity"></span></div>
+        <div><strong>Follow-ups:</strong> <span id="detail-followups"></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hidden area for modal content; your existing index.html modal uses #modal-content; keep it. -->
+</div>

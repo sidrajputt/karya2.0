@@ -1,13 +1,153 @@
-<div class="max-w-6xl mx-auto p-4">
-  <h1 class="text-2xl font-bold mb-6">Dashboard</h1>
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-    <div id="metric-total-leads" class="bg-white p-6 rounded-xl border shadow-sm">...</div>
-    <div id="metric-conversions" class="bg-white p-6 rounded-xl border shadow-sm">...</div>
-    <div class="bg-white p-6 rounded-xl border shadow-sm text-slate-400 flex items-center justify-center">More soon
+<!-- pages/dashboard.html -->
+<div
+  class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 h-[calc(100vh-20px)] flex flex-col overflow-y-auto custom-scroll">
+
+  <!-- HEADER -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4 flex-shrink-0">
+    <div>
+      <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Command Center</h1>
+      <p class="text-slate-500 text-sm mt-1" id="dashboard-subtitle">Real-time intelligence for your field operations.
+      </p>
+    </div>
+    <div class="flex items-center gap-3 bg-white px-4 py-2 rounded-full border border-slate-200 shadow-sm">
+      <span class="relative flex h-2.5 w-2.5">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+      </span>
+      <span class="text-xs font-bold text-slate-700" id="live-status-text">System Active</span>
     </div>
   </div>
-  <div class="bg-white p-6 rounded-xl border shadow-sm">
-    <h3 class="font-bold mb-4">Lead Funnel</h3>
-    <div id="funnel-chart" class="space-y-3"></div>
+
+  <!-- METRICS GRID -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8 flex-shrink-0">
+    <!-- Metric 1 -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+      <div class="flex justify-between items-start mb-3">
+        <div class="p-2 bg-blue-50 text-blue-600 rounded-lg"><i data-lucide="users" class="w-5 h-5"></i></div>
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Leads</span>
+      </div>
+      <div class="text-3xl font-black text-slate-900 mb-1" id="metric-total">-</div>
+      <div class="text-xs font-medium text-green-600 flex items-center gap-1">
+        <i data-lucide="trending-up" class="w-3 h-3"></i> <span id="metric-growth">0</span> new this week
+      </div>
+    </div>
+    <!-- Metric 2 -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+      <div class="flex justify-between items-start mb-3">
+        <div class="p-2 bg-purple-50 text-purple-600 rounded-lg"><i data-lucide="pie-chart" class="w-5 h-5"></i></div>
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Conversion Rate</span>
+      </div>
+      <div class="text-3xl font-black text-slate-900 mb-1" id="metric-conversion">-</div>
+      <div class="text-xs font-medium text-slate-400">Leads to Admissions</div>
+    </div>
+    <!-- Metric 3 -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+      <div class="flex justify-between items-start mb-3">
+        <div class="p-2 bg-orange-50 text-orange-600 rounded-lg"><i data-lucide="flame" class="w-5 h-5"></i></div>
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Hot Prospects</span>
+      </div>
+      <div class="text-3xl font-black text-slate-900 mb-1" id="metric-hot">-</div>
+      <div class="text-xs font-medium text-slate-400">High priority leads</div>
+    </div>
+    <!-- Metric 4 (Dynamic) -->
+    <div class="bg-slate-900 p-5 rounded-2xl shadow-lg text-white cursor-pointer group" id="metric-dynamic-card">
+      <div class="flex justify-between items-start mb-3">
+        <div class="p-2 bg-white/10 rounded-lg text-white"><i data-lucide="activity" class="w-5 h-5"></i></div>
+        <span
+          class="text-[10px] font-bold text-slate-400 uppercase tracking-wider group-hover:text-white transition">Active
+          Today</span>
+      </div>
+      <div class="text-3xl font-black text-white mb-1" id="metric-today">-</div>
+      <div class="text-xs font-medium text-blue-300 flex items-center gap-1">
+        View live activity <i data-lucide="arrow-right" class="w-3 h-3"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 1 -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <!-- Main Chart -->
+    <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="font-bold text-slate-900" id="chart-main-title">Lead Acquisition Trend</h3>
+        <select id="chart-main-filter"
+          class="text-xs border border-slate-200 rounded px-2 py-1 bg-slate-50 font-bold text-slate-600 focus:outline-none">
+          <option value="7">Last 7 Days</option>
+          <option value="30">Last 30 Days</option>
+        </select>
+      </div>
+      <div class="h-64 w-full">
+        <canvas id="chart-main"></canvas>
+      </div>
+    </div>
+    <!-- Pie Chart -->
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <h3 class="font-bold text-slate-900 mb-6" id="chart-pie-title">Lead Quality (Aura)</h3>
+      <div class="h-56 relative flex justify-center">
+        <canvas id="chart-pie"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 2 (Advanced Stats) -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <h3 class="font-bold text-slate-900 mb-4">Top Courses Demand</h3>
+      <div class="h-56 w-full">
+        <canvas id="chart-courses"></canvas>
+      </div>
+    </div>
+    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+      <h3 class="font-bold text-slate-900 mb-4">Route Performance</h3>
+      <div class="h-56 w-full">
+        <canvas id="chart-routes"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD / TEAM STATS -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-8">
+    <div class="p-5 border-b border-slate-100 flex justify-between items-center">
+      <h3 class="font-bold text-slate-900 flex items-center gap-2" id="table-title">
+        <i data-lucide="trophy" class="w-4 h-4 text-yellow-500"></i> Team Leaderboard
+      </h3>
+      <button id="btn-download-report"
+        class="text-xs font-bold text-slate-600 bg-slate-50 px-3 py-1.5 rounded-lg hover:bg-slate-100 transition border border-slate-200 flex items-center gap-2">
+        <i data-lucide="download" class="w-3 h-3"></i> Export PDF
+      </button>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm min-w-[600px]" id="stats-table">
+        <thead class="bg-slate-50 text-slate-500 font-semibold text-xs uppercase">
+          <tr>
+            <th class="p-4 pl-6">Name</th>
+            <th class="p-4">Role</th>
+            <th class="p-4 text-center">Total Leads</th>
+            <th class="p-4 text-center">Converted</th>
+            <th class="p-4 text-center">Win Rate</th>
+            <th class="p-4 pr-6 text-right">Performance</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100" id="stats-table-body">
+          <!-- Rows injected here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- ACTIVE USERS MODAL -->
+<div id="tpl-active-modal" class="hidden">
+  <div class="p-5">
+    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Live Activity
+    </h3>
+    <div class="overflow-y-auto max-h-[50vh] rounded-lg border border-slate-200 custom-scroll">
+      <div id="active-feed-list" class="space-y-2 p-2"></div>
+    </div>
+    <div class="mt-4 text-right">
+      <button class="btn-close-modal px-4 py-2 bg-slate-900 text-white text-sm font-bold rounded-lg">Close</button>
+    </div>
   </div>
 </div>

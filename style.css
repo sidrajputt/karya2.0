@@ -88,3 +88,84 @@ body {
         transform: translateX(100%);
     }
 }
+
+/* ... keep existing code ... */
+
+/* SAFETY STYLES (Fallback if Tailwind fails) */
+.btn-primary {
+    background-color: #2563eb !important;
+    /* Blue */
+    color: white !important;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #1d4ed8 !important;
+    /* Darker Blue */
+}
+
+/* Make sure the "Sign In" button on login page is visible */
+button[type="submit"],
+.btn-to-login {
+    background-color: #2563eb;
+    color: white;
+}
+
+/* Add to style.css */
+
+.perspective-1000 {
+    perspective: 1000px;
+}
+
+@keyframes pulse-slow {
+
+    0%,
+    100% {
+        opacity: 0.4;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.7;
+        transform: scale(1.1);
+    }
+}
+
+.animate-pulse-slow {
+    animation: pulse-slow 8s infinite ease-in-out;
+}
+
+/* Enhances the float animation from previous files */
+@keyframes floatUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Add to bottom of file */
+
+html,
+body {
+    height: 100%;
+}
+
+/* Custom Scrollbar for Feed */
+.custom-scroll-dark::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scroll-dark::-webkit-scrollbar-track {
+    background: #0f172a;
+}
+
+.custom-scroll-dark::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 2px;
+}

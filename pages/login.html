@@ -1,17 +1,133 @@
-<div class="min-h-screen flex items-center justify-center bg-slate-50 px-4">
-  <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl border border-slate-100 p-10 animate-float-up">
-    <div class="text-center mb-8">
-      <div
-        class="w-12 h-12 bg-brand-600 text-white font-bold text-2xl rounded-xl flex items-center justify-center mx-auto mb-4">
-        K</div>
-      <h2 class="text-2xl font-bold text-slate-900">Welcome Back</h2>
+<div class="min-h-screen flex bg-white font-sans overflow-hidden">
+
+  <div
+    class="w-full lg:w-[35%] flex flex-col justify-center px-8 sm:px-12 lg:px-16 relative z-10 bg-white border-r border-slate-100 shadow-xl">
+
+    <button onclick="window.navigate('landing')"
+      class="absolute top-8 left-8 flex items-center gap-2 text-slate-400 hover:text-slate-900 transition group font-bold text-xs uppercase tracking-wider">
+      <i data-lucide="arrow-left" class="w-4 h-4 transform group-hover:-translate-x-1 transition"></i> Back
+    </button>
+
+    <div class="max-w-sm w-full mx-auto animate-float-up">
+      <div class="flex items-center gap-3 mb-10">
+        <img src="assets/logo.png" alt="Karya Logo" class="h-10 w-auto">
+        <span class="text-2xl font-extrabold text-slate-900 tracking-tight">Karya</span>
+      </div>
+
+      <h1 class="text-3xl font-bold text-slate-900 mb-2 tracking-tight">Welcome back</h1>
+      <p class="text-slate-500 mb-8">Sign in with your Email or Phone number.</p>
+
+      <form id="login-form" class="space-y-5">
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Email or Phone</label>
+          <div class="relative group">
+            <i data-lucide="user"
+              class="absolute left-4 top-3.5 w-5 h-5 text-slate-400 group-focus-within:text-blue-600 transition"></i>
+            <input name="identifier" type="text" required
+              class="w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition font-medium text-slate-800 placeholder:text-slate-400"
+              placeholder="name@company.com or 9876543210">
+          </div>
+        </div>
+
+        <div class="space-y-1.5">
+          <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider ml-1">Password</label>
+          <div class="relative group">
+            <i data-lucide="lock"
+              class="absolute left-4 top-3.5 w-5 h-5 text-slate-400 group-focus-within:text-blue-600 transition"></i>
+
+            <input name="password" type="password" id="password-input" required
+              class="w-full pl-12 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 focus:bg-white focus:ring-4 focus:ring-blue-500/10 transition font-medium text-slate-800 placeholder:text-slate-400"
+              placeholder="••••••••">
+
+            <button type="button"
+              onclick="const i=document.getElementById('password-input'); i.type=i.type==='password'?'text':'password'; this.querySelector('i').setAttribute('data-lucide', i.type==='password'?'eye':'eye-off'); createIcons({icons});"
+              class="absolute right-3 top-3 text-slate-400 hover:text-slate-600 focus:outline-none">
+              <i data-lucide="eye" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-2">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+            <span class="text-xs text-slate-500 font-bold">Remember me</span>
+          </label>
+          <a href="#" class="text-xs font-bold text-blue-600 hover:text-blue-700">Forgot password?</a>
+        </div>
+
+        <button type="submit"
+          class="w-full bg-slate-900 hover:bg-black text-white py-3.5 rounded-xl font-bold shadow-lg shadow-slate-900/20 transition transform hover:-translate-y-0.5 mt-4">
+          Sign In to Workspace
+        </button>
+      </form>
+
+      <p class="mt-8 text-center text-xs text-slate-400">
+        Don't have an account? <a href="#" class="text-slate-900 font-bold hover:underline">Contact Admin</a>
+      </p>
     </div>
-    <form id="login-form" class="space-y-4">
-      <input name="email" type="email" required class="input-std" placeholder="Email">
-      <input name="password" type="password" required class="input-std" placeholder="Password">
-      <button
-        class="w-full py-3 bg-brand-600 text-white rounded-xl font-bold shadow-lg transition hover:bg-brand-700">Sign
-        In</button>
-    </form>
+
+    <div class="absolute bottom-6 left-0 right-0 text-center text-[10px] text-slate-300 font-medium">
+      &copy; <span id="year"></span> KARYA CRM. SECURED BY FIREBASE.
+    </div>
+    <script>document.getElementById('year').innerText = new Date().getFullYear();</script>
+  </div>
+
+  <div class="hidden lg:flex w-[65%] bg-slate-900 relative items-center justify-center overflow-hidden">
+    <div
+      class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 mix-blend-overlay">
+    </div>
+    <div
+      class="absolute top-[-20%] right-[-10%] w-[800px] h-[800px] bg-blue-600/20 rounded-full blur-[100px] animate-pulse">
+    </div>
+    <div
+      class="absolute bottom-[-20%] left-[-10%] w-[800px] h-[800px] bg-indigo-600/20 rounded-full blur-[100px] animate-pulse"
+      style="animation-delay: 2s"></div>
+
+    <div
+      class="relative z-10 w-[600px] perspective-1000 transform rotate-y-6 rotate-x-6 hover:rotate-0 transition-transform duration-700 ease-out">
+      <div class="bg-slate-800/80 backdrop-blur-xl rounded-3xl p-2 shadow-2xl border border-white/10">
+        <div
+          class="bg-slate-900 rounded-2xl overflow-hidden aspect-video relative flex items-center justify-center border border-white/5">
+          <div class="absolute inset-0 p-8 flex flex-col">
+            <div class="flex justify-between items-center mb-8">
+              <div class="h-8 w-32 bg-slate-800 rounded-lg"></div>
+              <div class="flex gap-3">
+                <div class="h-10 w-10 rounded-full bg-slate-800 border border-white/10"></div>
+                <div class="h-10 w-24 rounded-lg bg-blue-600"></div>
+              </div>
+            </div>
+            <div class="flex gap-6 flex-1">
+              <div class="w-1/3 space-y-4">
+                <div class="h-24 rounded-xl bg-slate-800/50 border border-white/5"></div>
+                <div class="h-24 rounded-xl bg-slate-800/50 border border-white/5"></div>
+              </div>
+              <div
+                class="flex-1 rounded-xl bg-slate-800/50 border border-white/5 relative overflow-hidden flex items-end px-8 pb-0 gap-4">
+                <div class="w-full bg-blue-500/20 h-[40%] rounded-t-sm"></div>
+                <div class="w-full bg-blue-500/40 h-[60%] rounded-t-sm"></div>
+                <div class="w-full bg-blue-500 h-[80%] rounded-t-sm shadow-[0_0_30px_rgba(59,130,246,0.5)]"></div>
+                <div class="w-full bg-blue-500/30 h-[50%] rounded-t-sm"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="absolute -left-12 bottom-20 bg-white p-4 rounded-2xl shadow-2xl animate-bounce"
+        style="animation-duration: 3s;">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center"><i
+              data-lucide="trending-up" class="w-5 h-5"></i></div>
+          <div>
+            <div class="text-[10px] font-bold text-slate-400 uppercase">Growth</div>
+            <div class="text-xl font-black text-slate-900">+124%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="absolute bottom-10 text-center z-10">
+      <p class="text-blue-300 font-bold text-xs tracking-widest uppercase mb-2">Powering Education</p>
+      <h2 class="text-white text-3xl font-bold">"The Operating System for Field Teams"</h2>
+    </div>
   </div>
 </div>

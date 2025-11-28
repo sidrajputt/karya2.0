@@ -8,27 +8,56 @@
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="favicon.ico">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#2563eb">
+  <meta name="theme-color" content="#0f172a">
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
   <script>tailwind.config = { theme: { extend: { colors: { brand: { 500: '#3b82f6', 600: '#2563eb', 900: '#1e3a8a' } } } } }</script>
   <script type="module" src="js/app.js" defer></script>
 </head>
 
-<body class="bg-slate-50 text-slate-900 font-sans pb-safe">
-  <div id="app-container" class="min-h-screen relative overflow-x-hidden">
+<body class="bg-slate-50 text-slate-900 font-sans pb-safe selection:bg-blue-500 selection:text-white">
+  <div id="global-loader"
+    class="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center transition-opacity duration-500">
+    <div
+      class="w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white font-bold text-3xl shadow-xl mb-6 animate-bounce">
+      K</div>
+    <div class="w-32 h-1 bg-slate-100 rounded-full overflow-hidden">
+      <div class="w-full h-full bg-blue-600 origin-left animate-[grow_1s_infinite]"></div>
+    </div>
+    <style>
+      @keyframes grow {
+        0% {
+          transform: scaleX(0);
+        }
+
+        100% {
+          transform: scaleX(1);
+        }
+      }
+    </style>
+  </div>
+
+  <div id="app-container" class="min-h-screen relative overflow-x-hidden opacity-0 transition-opacity duration-500">
     <div id="nav-sidebar"
-      class="hidden fixed inset-y-0 left-0 w-64 bg-slate-900 text-white z-50 flex-col transition-transform shadow-2xl">
+      class="hidden fixed inset-y-0 left-0 w-64 bg-[#0f172a] text-white z-50 flex-col transition-transform shadow-2xl border-r border-slate-800">
     </div>
     <div id="nav-mobile-header"
       class="hidden md:hidden fixed top-0 left-0 right-0 bg-white/90 backdrop-blur border-b border-slate-200 h-16 z-40 flex items-center justify-between px-4 shadow-sm">
     </div>
+
     <main id="main-content" class="min-h-screen transition-all duration-300 pt-16 md:pt-0"></main>
+
     <div id="nav-mobile-bottom"
-      class="hidden md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 h-20 z-50 flex justify-around items-start pt-3 pb-safe shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.05)]">
+      class="hidden md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 h-20 z-50 flex justify-around items-center pb-safe shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.05)]">
     </div>
   </div>
+
   <div id="toast-container" class="fixed top-5 right-5 z-[110] flex flex-col gap-2 pointer-events-none"></div>
   <div id="modal-overlay"
     class="hidden fixed inset-0 bg-black/60 z-[100] flex items-end md:items-center justify-center p-4 backdrop-blur-sm">
@@ -36,10 +65,9 @@
       class="bg-white w-full max-w-lg rounded-t-3xl md:rounded-3xl max-h-[90vh] overflow-y-auto shadow-2xl animate-float-up">
     </div>
   </div>
+
   <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js').catch(err => console.log('SW Fail', err));
-    }
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.getRegistrations().then(r => { for (let reg of r) reg.unregister(); }); }
   </script>
 </body>
 

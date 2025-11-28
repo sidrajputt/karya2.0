@@ -1,88 +1,252 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <title>Karya DB Migrator</title>
+    <meta charset="UTF-8">
+    <title>Karya Master Reset Tool (Smart Mode)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
 
-<body class="bg-slate-900 text-slate-300 p-10 font-mono">
-    <div class="max-w-2xl mx-auto">
-        <h1 class="text-2xl text-white font-bold mb-4">Database Migration Tool</h1>
+<body class="bg-slate-950 text-slate-300 font-mono p-8 min-h-screen">
 
-        <div class="mb-6 p-4 border border-slate-700 rounded bg-slate-800">
-            <h3 class="text-white font-bold mb-2">1. Initialize</h3>
-            <button id="btn-init" class="px-4 py-2 bg-blue-600 text-white rounded">Connect to Firestore</button>
-        </div>
-
-        <div class="mb-6 p-4 border border-slate-700 rounded bg-slate-800 opacity-50 pointer-events-none" id="actions">
-            <h3 class="text-white font-bold mb-2">2. Actions</h3>
-            <div class="flex gap-2 flex-wrap">
-                <button id="btn-seed-meta" class="px-3 py-1 bg-slate-600 text-white rounded">Seed Settings</button>
-                <button id="btn-seed-users" class="px-3 py-1 bg-slate-600 text-white rounded">Seed Admin User</button>
-                <button id="btn-migrate" class="px-3 py-1 bg-green-600 text-white rounded">MIGRATE DATA V2</button>
+    <div class="max-w-4xl mx-auto space-y-8">
+        <!-- HEADER -->
+        <div class="flex items-center gap-5 border-b border-slate-800 pb-6">
+            <div
+                class="w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center text-white font-bold text-3xl shadow-2xl">
+                K</div>
+            <div>
+                <h1 class="text-3xl font-bold text-white tracking-tight">System Re-Initializer</h1>
+                <p class="text-slate-500">Clean non-admin data & generate heavy load (200+ records).</p>
             </div>
         </div>
 
-        <div id="log" class="h-64 bg-black p-4 rounded overflow-auto text-xs font-mono border border-slate-700">
-            Waiting...</div>
+        <!-- 1. CONNECTION -->
+        <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-white font-bold flex items-center gap-2">
+                    <span class="bg-blue-600 text-xs px-2 py-1 rounded text-white">STEP 1</span> Firebase Config
+                </h2>
+                <span id="status-badge"
+                    class="text-xs font-bold text-red-500 uppercase tracking-wider flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> Disconnected
+                </span>
+            </div>
+            <textarea id="config-json"
+                class="w-full bg-black/50 border border-slate-700 rounded-xl p-4 text-xs h-24 text-green-400 font-mono focus:border-blue-600 focus:outline-none resize-none"
+                placeholder='Paste { "apiKey": "..." } here'></textarea>
+            <button id="btn-connect"
+                class="mt-4 w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold transition">Connect
+                System</button>
+        </div>
+
+        <!-- 2. SMART ACTIONS -->
+        <div id="ops-panel"
+            class="grid grid-cols-1 md:grid-cols-2 gap-4 opacity-50 pointer-events-none transition-all duration-500">
+
+            <!-- SMART CLEAN -->
+            <div class="bg-slate-900 p-6 rounded-2xl border border-slate-800 group hover:border-red-500/50 transition">
+                <h3 class="text-white font-bold text-lg mb-1 text-red-400">2. Smart Clean</h3>
+                <p class="text-xs text-slate-500 mb-4">Deletes Leads, Teams & Settings. <br><strong
+                        class="text-white">PRESERVES Super Admin</strong> users.</p>
+                <button id="btn-clean"
+                    class="w-full bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-600 hover:text-white py-3 rounded-lg font-bold text-sm transition">
+                    Start Cleanup
+                </button>
+            </div>
+
+            <!-- MEGA SEED -->
+            <div
+                class="bg-slate-900 p-6 rounded-2xl border border-slate-800 group hover:border-green-500/50 transition">
+                <h3 class="text-white font-bold text-lg mb-1 text-green-400">3. Mega Populate</h3>
+                <p class="text-xs text-slate-500 mb-4">Creates: 3 Supervisors, 6 Execs, 3 Teams, Settings, and <strong
+                        class="text-white">200+ LEADS</strong>.</p>
+                <button id="btn-populate"
+                    class="w-full bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-600 hover:text-white py-3 rounded-lg font-bold text-sm transition">
+                    Generate Ecosystem
+                </button>
+            </div>
+
+        </div>
+
+        <!-- LOG -->
+        <div
+            class="bg-black rounded-xl border border-slate-800 p-4 h-64 overflow-y-auto font-mono text-xs shadow-inner custom-scroll">
+            <div class="text-slate-600 mb-2">// Console Output...</div>
+            <div id="console-output" class="space-y-1"></div>
+        </div>
     </div>
 
-    <script type="module">
-        import { db } from './js/config.js';
-        import { collection, doc, setDoc, getDocs, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        const log = (msg) => {
-            const el = document.getElementById('log');
-            el.innerHTML += `<div>> ${msg}</div>`;
-            el.scrollTop = el.scrollHeight;
+    <script>
+        const logEl = document.getElementById('console-output');
+        const log = (msg, type = 'info') => {
+            const colors = { info: 'text-slate-400', success: 'text-green-400', warn: 'text-yellow-400', error: 'text-red-400' };
+            logEl.innerHTML += `<div class="${colors[type]} border-l-2 border-white/5 pl-2 py-0.5">> ${msg}</div>`;
+            logEl.parentElement.scrollTop = 99999;
         };
 
-        document.getElementById('btn-init').onclick = () => {
-            log('Connected to ' + db.app.options.projectId);
-            document.getElementById('actions').classList.remove('opacity-50', 'pointer-events-none');
+        // 1. CONNECT
+        document.getElementById('btn-connect').onclick = () => {
+            const val = document.getElementById('config-json').value;
+            try {
+                const cfg = val ? JSON.parse(val) : window.firebaseConfig;
+                if (!cfg) throw new Error("No config found.");
+                if (!firebase.apps.length) firebase.initializeApp(cfg);
+                window.db = firebase.firestore();
+
+                document.getElementById('status-badge').innerHTML = `<span class="w-2 h-2 rounded-full bg-green-500"></span> Connected`;
+                document.getElementById('ops-panel').classList.remove('opacity-50', 'pointer-events-none');
+                log("System Connected.", 'success');
+            } catch (e) { log(e.message, 'error'); }
         };
 
-        document.getElementById('btn-seed-meta').onclick = async () => {
-            await setDoc(doc(db, 'settings', 'meta'), {
-                OriginType: [{ value: 'School' }, { value: 'Coaching' }, { value: 'Institute' }]
-            }, { merge: true });
-            log('Settings seeded.');
-        };
+        // 2. SMART CLEAN (Preserve Admin)
+        document.getElementById('btn-clean').onclick = async () => {
+            if (!confirm("This will delete ALL Leads, Teams, and Non-Admin Users. Continue?")) return;
 
-        document.getElementById('btn-seed-users').onclick = async () => {
-            // Creates a dummy entry; actual auth user must be created in Firebase Console
-            await setDoc(doc(db, 'users', 'admin_placeholder'), {
-                Name: "Admin User", Role: "SuperAdmin", Email: "admin@karya.com"
-            });
-            log('User placeholder created.');
-        };
+            log("Starting Smart Clean...", 'warn');
+            const batchSize = 400;
 
-        document.getElementById('btn-migrate').onclick = async () => {
-            log('Starting Migration V2 (Adding Timelines)...');
-            const snap = await getDocs(collection(db, 'leads'));
-            let count = 0;
-            for (const d of snap.docs) {
-                const data = d.data();
-                const update = {};
-                // Ensure Timeline Exists
-                if (!data.Timeline || !Array.isArray(data.Timeline)) {
-                    update.Timeline = [{
-                        ts: new Date().toISOString(),
-                        type: 'system',
-                        note: 'Migrated from V1'
-                    }];
-                }
-                // Ensure CreatedAt is valid timestamp
-                if (!data.CreatedAt) update.CreatedAt = serverTimestamp();
+            // Helper to delete collection
+            const deleteCollection = async (colName, filterFn = null) => {
+                const snap = await db.collection(colName).get();
+                if (snap.empty) return;
+                let batch = db.batch();
+                let count = 0;
+                let deleted = 0;
 
-                if (Object.keys(update).length > 0) {
-                    await updateDoc(d.ref, update);
+                for (const doc of snap.docs) {
+                    if (filterFn && !filterFn(doc.data())) continue; // Skip if filter returns false
+
+                    batch.delete(doc.ref);
                     count++;
+                    deleted++;
+                    if (count >= batchSize) { await batch.commit(); batch = db.batch(); count = 0; }
                 }
+                if (count > 0) await batch.commit();
+                log(`Deleted ${deleted} from [${colName}]`);
+            };
+
+            await deleteCollection('leads');
+            await deleteCollection('teams');
+
+            // Delete Users EXCEPT SuperAdmin
+            log("Scanning Users...");
+            await deleteCollection('users', (data) => data.Role !== 'SuperAdmin');
+
+            // Reset Settings
+            await db.collection('settings').doc('meta').delete();
+
+            log("Clean Complete. Admins preserved.", 'success');
+        };
+
+        // 3. MEGA POPULATE
+        document.getElementById('btn-populate').onclick = async () => {
+            log("Building Ecosystem...", 'warn');
+            const b = db.batch();
+
+            // 1. Settings
+            b.set(db.collection('settings').doc('meta'), {
+                DataSource: ['Facebook Ads', 'Google Ads', 'Walk-in', 'Referral', 'Cold Call', 'Seminar', 'Website', 'LinkedIn'],
+                Category: ['General', 'OBC', 'SC', 'ST', 'EWS'],
+                Class: ['9th', '10th', '11th', '12th', 'Graduate', 'Post-Grad'],
+                Courses: ['B.Tech', 'BBA', 'BCA', 'MBA', 'Pharmacy', 'Hotel Management', 'Fashion Design', 'Mass Comm'],
+                Routes: ['North Zone', 'South Highway', 'City Center', 'Industrial Belt', 'Rural Route A', 'Eastern Suburbs', 'West End'],
+                InstituteType: ['School', 'Coaching', 'College', 'Polytechnic'],
+                SchoolNames: ['DPS Public School', 'St. Xaviers', 'Govt High School', 'City Convent', 'Modern Academy', 'Little Angels', 'Ryan International', 'Greenfield Public', 'Sunrise Academy']
+            }, { merge: true });
+
+            // 2. Create Teams & Staff
+            // Supervisors
+            const sups = [
+                { id: 'sup_rajesh', Name: 'Rajesh Kumar', Email: 'rajesh@karya.com', Phone: '9876543210' },
+                { id: 'sup_priya', Name: 'Priya Singh', Email: 'priya@karya.com', Phone: '9876543211' },
+                { id: 'sup_vikram', Name: 'Vikram Malhotra', Email: 'vikram@karya.com', Phone: '9876543212' }
+            ];
+
+            sups.forEach(s => {
+                b.set(db.collection('users').doc(s.id), { ...s, Password: '123', Role: 'Supervisor', Status: 'Active', CreatedAt: new Date().toISOString() });
+            });
+
+            // Teams
+            const teams = [
+                { id: 'team_alpha', Name: 'Alpha Squad', SupervisorID: 'sup_rajesh' },
+                { id: 'team_bravo', Name: 'Bravo Force', SupervisorID: 'sup_rajesh' },
+                { id: 'team_charlie', Name: 'Charlie Unit', SupervisorID: 'sup_priya' },
+                { id: 'team_delta', Name: 'Delta Ops', SupervisorID: 'sup_vikram' }
+            ];
+
+            teams.forEach(t => {
+                b.set(db.collection('teams').doc(t.id), { ...t, CreatedAt: new Date().toISOString() });
+            });
+
+            // Executives (2 per team approx)
+            const execs = [
+                { id: 'exec_amit', Name: 'Amit Sharma', TeamID: 'team_alpha' },
+                { id: 'exec_sneha', Name: 'Sneha Gupta', TeamID: 'team_alpha' },
+                { id: 'exec_rohan', Name: 'Rohan Das', TeamID: 'team_bravo' },
+                { id: 'exec_kavita', Name: 'Kavita Roy', TeamID: 'team_charlie' },
+                { id: 'exec_arjun', Name: 'Arjun Reddy', TeamID: 'team_delta' },
+                { id: 'exec_zara', Name: 'Zara Khan', TeamID: 'team_delta' }
+            ];
+
+            execs.forEach(e => {
+                b.set(db.collection('users').doc(e.id), { ...e, Email: `${e.id}@karya.com`, Password: '123', Role: 'Executive', Status: 'Active', Phone: '9999999999', CreatedAt: new Date().toISOString() });
+            });
+
+            // Commit Structure
+            await b.commit();
+            log("Structure Created (3 Sups, 4 Teams, 6 Execs).");
+
+            // 3. Generate 200 Leads (Batching required)
+            const leadBatch = db.batch();
+            const statuses = ['New Added', 'Follow Call Done', 'Campus Visited', 'Admission Done', 'Not Interested', 'Lost'];
+            const auras = ['Hot', 'Mild', 'Cold', 'Dead'];
+            const sources = ['Facebook Ads', 'Walk-in', 'Referral', 'Google Ads'];
+
+            for (let i = 0; i < 200; i++) {
+                const ref = db.collection('leads').doc();
+                const exec = execs[Math.floor(Math.random() * execs.length)];
+
+                // Random Date (Last 90 days) to show trend graphs
+                const date = new Date();
+                date.setDate(date.getDate() - Math.floor(Math.random() * 90));
+
+                const isStudent = Math.random() > 0.4;
+
+                const base = {
+                    LeadID: ref.id,
+                    Name: `Lead Candidate ${i + 1}`,
+                    Phone: `9${Math.floor(100000000 + Math.random() * 900000000)}`,
+                    LeadType: isStudent ? 'Student' : 'Other',
+                    LeadAura: auras[Math.floor(Math.random() * auras.length)],
+                    Status: statuses[Math.floor(Math.random() * statuses.length)],
+                    DataSource: sources[Math.floor(Math.random() * sources.length)],
+                    EnteredBy: exec.id,
+                    TeamID: exec.TeamID,
+                    CreatedAt: date.toISOString(),
+                    Timeline: [{ ts: date.toISOString(), type: 'create', note: 'System Generated', actor: 'Seeder' }]
+                };
+
+                if (isStudent) {
+                    base.Class = Math.random() > 0.5 ? '12th' : '10th';
+                    base.InstituteName = 'DPS Public School';
+                    base.InterestedCourse = 'B.Tech';
+                } else {
+                    base.OtherType = 'Route';
+                    base.RouteFrom = 'North Zone';
+                    base.Village = 'Rampur';
+                }
+
+                leadBatch.set(ref, base);
             }
-            log(`Migration complete. Updated ${count} documents.`);
+
+            await leadBatch.commit();
+            log("200 Leads Generated successfully.", 'success');
+            alert("Database Reset & Repopulated! You can now login.");
         };
     </script>
 </body>
